@@ -1,0 +1,52 @@
+name: "code-reviewer"
+version: "1.0.0"
+description: "自动审查代码质量，发现潜在问题，提供改进建议"
+author: "My Blog"
+tags:
+  - code
+  - review
+  - quality
+
+config:
+  timeout: 120
+  retries: 2
+
+parameters:
+  - name: "code"
+    type: "string"
+    required: true
+    description: "需要审查的代码"
+  - name: "language"
+    type: "string"
+    required: false
+    default: "javascript"
+    description: "编程语言"
+  - name: "focus_areas"
+    type: "array"
+    required: false
+    default: ["performance", "security", "readability"]
+    description: "重点关注领域"
+
+logic:
+  type: "prompt"
+  content: "请审查以下{{language}}代码，重点关注{{focus_areas}}方面：\n\n```{{language}}\n{{code}}\n```\n\n审查结果："
+
+tools:
+  - name: "syntax_check"
+    description: "检查代码语法"
+    parameters:
+      code: "{{code}}"
+      language: "{{language}}"
+
+workflow:
+  steps:
+    - name: "syntax"
+      action: "tool"
+      tool: "syntax_check"
+      next: "review"
+    - name: "review"
+      action: "prompt"
+      next: "output"
+    - name: "output"
+      action: "format"
+      format: "markdown"
